@@ -4,6 +4,7 @@ using Minimal_WebAPI.EntityLayer;
 using Minimal_WebAPI.Repository;
 using System.Reflection.Metadata.Ecma335;
 using Minimal_WebAPI.Interfaces;
+using Minimal_WebAPI.RouterClasses;
 
 namespace Minimal_WebAPI
 {
@@ -43,25 +44,9 @@ namespace Minimal_WebAPI
 
 
             //API Routes fetching a data from repository method
-            app.MapGet("api/Product",() => {
-                List<Product> records = new ProductRepository().Get();
-                if (records != null)
-                {
-                    return Results.Ok(records);
-                }
-                return Results.NotFound("No products Found");
-            }).WithTags("productApi").Produces(200).Produces<List<Product>>().Produces(404);
-            
-            app.MapGet("/api/product/{id:int}", (int id) =>
-            {
-                Product record = new ProductRepository().GetById(id);
-                if(record != null)
-                {
-                    return Results.Ok(record);
-                }
-                return Results.NotFound();
-            }).WithTags("productApi").Produces(200).Produces<Product>().Produces(404);
-             
+            //Base route class
+            new ProductRouterClass().AddRoutes(app);
+
             //Customer Routes
             app.MapGet("api/customer", () =>
             {
