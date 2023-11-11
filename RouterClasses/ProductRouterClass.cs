@@ -1,15 +1,19 @@
 ﻿using Minimal_WebAPI.BaseRouter;
 using Minimal_WebAPI.EntityLayer;
+using Minimal_WebAPI.Interfaces;
 using Minimal_WebAPI.Repository;
 
 namespace Minimal_WebAPI.RouterClasses
 {
     public class ProductRouterClass : BaseRouterClass
     {
-        public ProductRouterClass()
+        private readonly IRepository<Product> _repository;
+
+        public ProductRouterClass(IRepository<Product> repository)
         {
             UrlFragment = "api/Product";
             TagName = "ProductAPI";
+            _repository = repository;
         }
         public override void AddRoutes(WebApplication app)
         {
@@ -22,7 +26,7 @@ namespace Minimal_WebAPI.RouterClasses
 
         protected virtual IResult Get()
         {
-            List<Product> records = new ProductRepository().Get();
+            List<Product> records = _repository.Get();
 
             if (records != null)
             {
@@ -35,7 +39,7 @@ namespace Minimal_WebAPI.RouterClasses
 
         protected virtual IResult GetById(int id)
         {
-            Product record = new ProductRepository().GetById(id);
+            Product record = _repository.GetById(id);
             if (record != null)
             {
                 return Results.Ok(record);

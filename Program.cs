@@ -5,6 +5,7 @@ using Minimal_WebAPI.Repository;
 using System.Reflection.Metadata.Ecma335;
 using Minimal_WebAPI.Interfaces;
 using Minimal_WebAPI.RouterClasses;
+using Minimal_WebAPI.BaseRouter;
 
 namespace Minimal_WebAPI
 {
@@ -19,6 +20,8 @@ namespace Minimal_WebAPI
             builder.Services.AddScoped<AddWorksAPIDefaults, AddWorksAPIDefaults>();
             builder.Services.AddScoped<IRepository<Product>, ProductRepository>();
             builder.Services.AddScoped<IRepository<Customer>, CustomerRepository>();
+            builder.Services.AddScoped<BaseRouterClass, ProductRouterClass>();
+
             //swagger Ui Suppport
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -38,14 +41,7 @@ namespace Minimal_WebAPI
             app.MapGet("api/HelloWorld", () => "welcome to hello world!!").WithTags("Sample");
             app.MapGet("api/Hello",() => Results.StatusCode(200)).WithTags("Sample");
             app.MapGet("api/NoContent",() => Results.NoContent()).WithTags("Sample");
-
-            //API Routes with Params
             app.MapGet("api/Greet", (string name) => Results.Ok($"hello {name}")).WithTags("Sample");
-
-
-            //API Routes fetching a data from repository method
-            //Base route class
-            new ProductRouterClass().AddRoutes(app);
 
             //Customer Routes
             app.MapGet("api/customer", () =>
@@ -62,7 +58,6 @@ namespace Minimal_WebAPI
 
 
             //with dependency injection
-
             app.MapGet("api/aAddWorksAPIDefaults", (AddWorksAPIDefaults settings) =>
                {
                    return Results.Ok(settings);
@@ -91,12 +86,20 @@ namespace Minimal_WebAPI
                 return Results.NotFound();
             }).WithTags("CustomerApiDI").Produces(200).Produces<List<Customer>>();
 
-            //Running the application
-            app.Run();
 
+            //Minimal end point  to add route from all classes
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider.GetServices<BaseRouterClass>();
+                foreach(var item in services)
+                {
+                    item.AddRoutes(app);
+                }
 
+                //Running the application
+                app.Run();
+            }
 
-            //Additional Data and Methods
         }
     }
 }
