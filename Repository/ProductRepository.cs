@@ -5,7 +5,7 @@ namespace Minimal_WebAPI.Repository
 {
     public class ProductRepository : IRepository<Product>
     {
-        public  Product GetById(int id)
+        public  Product GetById(int? id)
         {
             return Get().FirstOrDefault(X => X.ProductID == id);
         }

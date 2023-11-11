@@ -6,7 +6,7 @@ using System.Reflection.Metadata.Ecma335;
 using Minimal_WebAPI.Interfaces;
 using Minimal_WebAPI.RouterClasses;
 using Minimal_WebAPI.BaseRouter;
-
+using Serilog;
 namespace Minimal_WebAPI
 {
     public class Program
@@ -21,11 +21,21 @@ namespace Minimal_WebAPI
             builder.Services.AddScoped<IRepository<Product>, ProductRepository>();
             builder.Services.AddScoped<IRepository<Customer>, CustomerRepository>();
             builder.Services.AddScoped<BaseRouterClass, ProductRouterClass>();
+            builder.Services.AddScoped<BaseRouterClass, SimpleRouterClass>();
+            builder.Services.AddScoped<BaseRouterClass, CustomerRouterClass>();
+            builder.Services.AddScoped<BaseRouterClass, LogTestRouter>();
 
             //swagger Ui Suppport
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            //serilog configuration
+
+            builder.Host.UseSerilog((context, log) =>
+            {
+                log.WriteTo.Console();
+                //log.WriteTo.File("Logs/Logs.text", rollingInterval: RollingInterval.Day);
+            });
 
             //creating a application object from builder.build()
             var app = builder.Build();
@@ -36,56 +46,6 @@ namespace Minimal_WebAPI
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
-            //API Routes
-            app.MapGet("api/HelloWorld", () => "welcome to hello world!!").WithTags("Sample");
-            app.MapGet("api/Hello",() => Results.StatusCode(200)).WithTags("Sample");
-            app.MapGet("api/NoContent",() => Results.NoContent()).WithTags("Sample");
-            app.MapGet("api/Greet", (string name) => Results.Ok($"hello {name}")).WithTags("Sample");
-
-            //Customer Routes
-            app.MapGet("api/customer", () =>
-            {
-                List<Customer> customers = new CustomerRepository().Get();
-                if (customers != null)
-                {
-                    return Results.Ok(customers);
-                }
-                return Results.NotFound();
-            }).WithTags("CustomerApi").Produces(200).Produces<List<Customer>>();
-
-
-
-
-            //with dependency injection
-            app.MapGet("api/aAddWorksAPIDefaults", (AddWorksAPIDefaults settings) =>
-               {
-                   return Results.Ok(settings);
-
-               }).WithTags("AddWorksAPIDefaults");
-
-
-            app.MapGet("api/Product/Get", (IRepository<Product> productRepository) => {
-                List<Product> records = productRepository.Get();
-                if (records != null)
-                {
-                    return Results.Ok(records);
-                }
-                return Results.NotFound("No products Found");
-
-            }).WithTags("productApiDI").Produces(200).Produces<List<Product>>().Produces(404);
-
-
-            app.MapGet("api/customer/Get", (IRepository<Customer> customerRepository) =>
-            {
-                List<Customer> customers = customerRepository.Get();
-                if (customers != null)
-                {
-                    return Results.Ok(customers);
-                }
-                return Results.NotFound();
-            }).WithTags("CustomerApiDI").Produces(200).Produces<List<Customer>>();
-
 
             //Minimal end point  to add route from all classes
             using (var scope = app.Services.CreateScope())

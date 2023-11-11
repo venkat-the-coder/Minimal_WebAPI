@@ -5,7 +5,7 @@ namespace Minimal_WebAPI.Repository
 {
     public class CustomerRepository : IRepository<Customer>
     {
-        public Customer? GetById(int id)
+        public Customer? GetById(int? id)
         {
             return Get().FirstOrDefault(X => X.CustomerID == id);
         }

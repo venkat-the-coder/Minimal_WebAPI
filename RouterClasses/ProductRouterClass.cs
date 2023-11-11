@@ -12,7 +12,7 @@ namespace Minimal_WebAPI.RouterClasses
         public ProductRouterClass(IRepository<Product> repository)
         {
             UrlFragment = "api/Product";
-            TagName = "ProductAPI";
+            TagName = "ProductAPI-DI";
             _repository = repository;
         }
         public override void AddRoutes(WebApplication app)
@@ -37,7 +37,7 @@ namespace Minimal_WebAPI.RouterClasses
         }
 
 
-        protected virtual IResult GetById(int id)
+        protected virtual IResult GetById(int? id)
         {
             Product record = _repository.GetById(id);
             if (record != null)
